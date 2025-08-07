@@ -242,6 +242,7 @@ int *const MTR_ADDR_ctrl = (int *)0x30000040;
 int *const BUTTON_ADDR   = (int *)0x30000044;
 ///// target flag
 int *const TARGET_LED    = (int *)0x30000048;
+int *const ROLL          = (int *)0x3000004c;
 
 /******************************************************************************************/
 #define FREQ         100  // 100, Operation frequency in Mz
@@ -256,9 +257,9 @@ int *const TARGET_LED    = (int *)0x30000048;
 #define LOOP_INIT    500  // 400, 
 /******************************************************************************************/
 #define TARGET       -60  // -71   // default:2.0 : pendulum target angle, horiazon = 0.0
-#define P_GAIN       1500  // 2000  // default:800
-#define I_GAIN       3000  // 3000  // default:200
-#define D_GAIN         0  // 50    // default: 75
+#define P_GAIN      1200  // 2000  // default:800
+#define I_GAIN      3000  // 3000  // default:200
+#define D_GAIN        50  // 50    // default: 75
 //#define TUNING       1  // enable parameter tuning
 /******************************************************************************************/
 typedef struct parameters
@@ -346,6 +347,7 @@ int main() {
         }
         
         *(MTR_ADDR_ctrl) = (pwm_int & 0xff) | (motor_ctrl << 16); // control motor
+        *(ROLL) = (int)(roll * 10.0f); 
 
         timer = *(MPU_ADDR_TIME);
         if(loops%100==0) {
@@ -411,25 +413,26 @@ int main() {
         }
         char buf[32];
 
-        if(loops % 10 == 0){
-            st7789_set_pos(13,0); sprintf_(buf, "%2d\n", param_select);    LCD_prints(buf);
-            st7789_set_pos(8, 1); sprintf_(buf, "%7.2f\n",roll);    LCD_prints(buf);
-            st7789_set_pos(6, 2); sprintf_(buf, "%9.2f\n",  power); LCD_prints(buf);
-            st7789_set_pos(6, 3); sprintf_(buf, "%9.2f\n",  pwm);   LCD_prints(buf);
-            st7789_set_pos(8, 5); sprintf_(buf, "%7.2f\n",p.target);LCD_prints_color(buf, COLOR_CYAN);
-            st7789_set_pos(8, 6); sprintf_(buf, "%7.2f\n",  p.Kp);  LCD_prints_color(buf, COLOR_CYAN);
-            st7789_set_pos(8, 7); sprintf_(buf, "%7.2f\n",  p.Ki);  LCD_prints_color(buf, COLOR_CYAN);
-            st7789_set_pos(8, 8); sprintf_(buf, "%7.2f\n",  p.Kd);  LCD_prints_color(buf, COLOR_CYAN);
-            st7789_set_pos(8, 9); sprintf_(buf, "%7.2f\n",  p.pwm_base);LCD_prints_color(buf, COLOR_YELLOW);
-            st7789_set_pos(8,10); sprintf_(buf, "%7.2f\n",  p.Vmax);  LCD_prints_color(buf, COLOR_YELLOW);
-            st7789_set_pos(5,11); sprintf_(buf, "%10d\n", loops);   LCD_prints(buf);
-            st7789_set_pos(5,12); sprintf_(buf, "%10d\n", timer);   LCD_prints(buf);
-            st7789_set_pos(5,13); sprintf_(buf, "%10d\n", (FREQ * 100000)/(t1 - t2)); LCD_prints(buf);
-            st7789_set_pos(2,14);
-            if (motor_ctrl==0) LCD_prints_color("*** STOP***\n", COLOR_RED);
-            if (motor_ctrl==1) LCD_prints_color("*** FWD ***\n", COLOR_CYAN);
-            if (motor_ctrl==2) LCD_prints_color("*** REV ***\n", COLOR_BLACK);
-        }
+        st7789_set_pos(13,0); sprintf_(buf, "%2d\n", param_select);    LCD_prints(buf);
+        st7789_set_pos(8, 1); sprintf_(buf, "%7.2f\n",roll);    LCD_prints(buf);
+        st7789_set_pos(6, 2); sprintf_(buf, "%9.2f\n",  power); LCD_prints(buf);
+        st7789_set_pos(6, 3); sprintf_(buf, "%9.2f\n",  pwm);   LCD_prints(buf);
+        st7789_set_pos(8, 5); sprintf_(buf, "%7.2f\n",p.target);LCD_prints_color(buf, COLOR_CYAN);
+        st7789_set_pos(8, 6); sprintf_(buf, "%7.2f\n",  p.Kp);  LCD_prints_color(buf, COLOR_CYAN);
+        st7789_set_pos(8, 7); sprintf_(buf, "%7.2f\n",  p.Ki);  LCD_prints_color(buf, COLOR_CYAN);
+        st7789_set_pos(8, 8); sprintf_(buf, "%7.2f\n",  p.Kd);  LCD_prints_color(buf, COLOR_CYAN);
+//        st7789_set_pos(8, 6); sprintf_(buf, "%7.2f\n",  P);    LCD_prints_color(buf, COLOR_CYAN);
+//        st7789_set_pos(8, 7); sprintf_(buf, "%7.2f\n",  I);    LCD_prints_color(buf, COLOR_CYAN);
+//        st7789_set_pos(8, 8); sprintf_(buf, "%7.2f\n",  D);    LCD_prints_color(buf, COLOR_CYAN);
+        st7789_set_pos(8, 9); sprintf_(buf, "%7.2f\n",  p.pwm_base);LCD_prints_color(buf, COLOR_YELLOW);
+        st7789_set_pos(8,10); sprintf_(buf, "%7.2f\n",  p.Vmax);  LCD_prints_color(buf, COLOR_YELLOW);
+        st7789_set_pos(5,11); sprintf_(buf, "%10d\n", loops);   LCD_prints(buf);
+        st7789_set_pos(5,12); sprintf_(buf, "%10d\n", timer);   LCD_prints(buf);
+        st7789_set_pos(5,13); sprintf_(buf, "%10d\n", (FREQ * 100000)/(t1 - t2)); LCD_prints(buf);
+        st7789_set_pos(2,14);
+        if (motor_ctrl==0) LCD_prints_color("*** STOP***\n", COLOR_RED);
+        if (motor_ctrl==1) LCD_prints_color("*** FWD ***\n", COLOR_CYAN);
+        if (motor_ctrl==2) LCD_prints_color("*** REV ***\n", COLOR_BLACK);
         /****************************************************************************/        
         
 #ifdef TUNING ///// Parameter Tuning by VIO

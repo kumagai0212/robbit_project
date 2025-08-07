@@ -4,10 +4,9 @@
 set top_dir [pwd]
 set proj_name main
 set part_name xc7a35ticpg236-1L
-set src_files [list $top_dir/config.vh $top_dir/proc.v $top_dir/cfu.v $top_dir/main.v $top_dir/mpu.v $top_dir/robbit.v]
+set src_files [list $top_dir/config.vh $top_dir/proc.v $top_dir/cfu.v $top_dir/main.v $top_dir/mpu.v]
 set nproc [exec nproc]
 
-# config.vhを開いて，CLK_FREQ_MHZが存在するか確認 -> 記憶する
 set file [open "$top_dir/config.vh"]
 if {[regexp {`define\s+CLK_FREQ_MHZ\s+(\d+)} [read $file] -> freq]} {
     puts "Found frequency: $freq MHz"
@@ -18,16 +17,13 @@ if {[regexp {`define\s+CLK_FREQ_MHZ\s+(\d+)} [read $file] -> freq]} {
 }
 close $file
 
-# vivadoプロジェクト作成
 create_project -force $proj_name $top_dir/vivado -part $part_name
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]
 
-# 制約ファイル追加
 add_files -force -scan_for_includes $src_files
 add_files -fileset constrs_1 $top_dir/main.xdc
 
-# 構文チェック
 if {[regexp {CRITICAL WARNING:} [check_syntax -return_string -fileset sources_1]]} {
     puts "Syntax check failed. Exiting..."
     exit 1

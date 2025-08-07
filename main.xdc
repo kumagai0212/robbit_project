@@ -20,10 +20,10 @@ create_clock -period 83.330 -name sys_clk -add [get_ports clk_i]
 ##### 240x240 ST7789 mini display #####
 ###############################################################################################
 ## Pmod Header JA
-set_property -dict {PACKAGE_PIN W6 IOSTANDARD LVCMOS33} [get_ports st7789_DC]
-set_property -dict {PACKAGE_PIN U3 IOSTANDARD LVCMOS33} [get_ports st7789_RES]
-set_property -dict {PACKAGE_PIN U7 IOSTANDARD LVCMOS33} [get_ports st7789_SDA]
-set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports st7789_SCL]
+set_property -dict {PACKAGE_PIN W6 IOSTANDARD LVCMOS33} [get_ports esp32c3_CS]
+#set_property -dict {PACKAGE_PIN U3 IOSTANDARD LVCMOS33} [get_ports st7789_RES]
+set_property -dict {PACKAGE_PIN U7 IOSTANDARD LVCMOS33} [get_ports esp32c3_SDA]
+set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports esp32c3_SCL]
 
 ###### Pmod Header for MPU-6050
 ###### Pin 3 and Pin 4

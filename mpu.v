@@ -62,7 +62,6 @@ module mpu6050 (
     wire        nack;
 
     localparam CNT_1_SEC = `CLK_FREQ_MHZ * 1_000_000;                     // 1 second delay
-    localparam CNT_200HZ = 100_000;               // 5ms delay for 200Hz reading
 
     //State machine for setup and 1 second reads of Temperature
     always@(posedge clk_i or posedge rst_i) begin
@@ -355,40 +354,40 @@ reg [7:0] wait_cntr;
 reg       en_wait_cntr;      
 
 `ifndef DEBUG
- reg [3:0]  state;
-reg [3:0]  next_state;
-reg        reg_sda_o;
-reg [7:0]  addr;
-reg        rw;
-reg [15:0] sub_addr;
-reg        sub_len;
-reg [23:0] byte_len;
-reg        en_scl;
-reg        byte_sent;
-reg [23:0] num_byte_sent;
-reg [2:0]  cntr;
-reg [7:0]  byte_sr;
-reg        read_sub_addr_sent_flag;
-reg [7:0]  data_to_write;
-reg [7:0]  data_in_sr;
+    reg [3:0]  state;
+    reg [3:0]  next_state;
+    reg        reg_sda_o;
+    reg [7:0]  addr;
+    reg        rw;
+    reg [15:0] sub_addr;
+    reg        sub_len;
+    reg [23:0] byte_len;
+    reg        en_scl;
+    reg        byte_sent;
+    reg [23:0] num_byte_sent;
+    reg [2:0]  cntr;
+    reg [7:0]  byte_sr;
+    reg        read_sub_addr_sent_flag;
+    reg [7:0]  data_to_write;
+    reg [7:0]  data_in_sr;
 
-//For generation of 400KHz clock
-reg clk_i2c;
-reg [15:0] clk_i2c_cntr;
-reg [15:0] clk_state_cntr;
+    //For generation of 400KHz clock
+    reg clk_i2c;
+    reg [15:0] clk_i2c_cntr;
+    reg [15:0] clk_state_cntr;
 
-//For taking a sample of the scl and sda
-reg [1:0] sda_curr;    //So this one is asynchronous especially with replies from the slave, must have synchronization chain of 2
-reg       sda_prev;
-reg scl_prev, scl_curr;          //master will always drive this line, so it doesn't matter
+    //For taking a sample of the scl and sda
+    reg [1:0] sda_curr;    //So this one is asynchronous especially with replies from the slave, must have synchronization chain of 2
+    reg       sda_prev;
+    reg scl_prev, scl_curr;          //master will always drive this line, so it doesn't matter
 
-reg ack_in_prog;      //For sending acks during read
-reg ack_nack;
-reg en_end_indicator;
+    reg ack_in_prog;      //For sending acks during read
+    reg ack_nack;
+    reg en_end_indicator;
 
-reg grab_next_data;
-reg scl_is_high;
-reg scl_is_low;
+    reg grab_next_data;
+    reg scl_is_high;
+    reg scl_is_low;
 `endif
 
 //clk_i2c 400KHz is synchronous to i_clk, so no need for 2 reg synchronization chain in other blocks

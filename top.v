@@ -66,12 +66,13 @@ module top;
     //    end
 
     wire sda, scl, dc, res;
+    wire esp_sda, esp_scl, esp_cs;
     main m0 (
         .clk_i          (clk        ),
-        .st7789_SDA     (sda        ),
-        .st7789_SCL     (scl        ),
-        .st7789_DC      (dc         ),
-        .st7789_RES     (res        ),
+        // .st7789_SDA     (sda        ),
+        // .st7789_SCL     (scl        ),
+        // .st7789_DC      (dc         ),
+        // .st7789_RES     (res        ),
         .scl            (           ),
         .sda            (           ),
         .motor_stby     (           ),
@@ -79,7 +80,10 @@ module top;
         .motor_ain2     (           ),             
         .motor_pwma     (           ), 
         .button         (           ),
-        .led            (           )   
+        .led            (           ),
+        .esp32c3_SDA   (esp_sda),
+        .esp32c3_SCL   (esp_scl),
+        .esp32c3_CS    (esp_cs)   
     );
 
 endmodule
