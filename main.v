@@ -343,33 +343,33 @@ module m_esp32c3 (
     
     assign w_trigger = dbus_we_i && (dbus_waddr_i==ROLL_ADDR);
 
-    // always @(posedge w_clk) begin
-        
-    //     if(rst_i) begin
-    //         r_en <= 0;
-    //         r_tx_data <= 0;
-    //     end else if(w_trigger && !w_spi_busy) begin
-    //         //r_tx_data <= dbus_wdata_i;
-    //         r_tx_data <= 32'h000000AB;
-    //         r_en <= 1'b1;
-    //     end else begin
-    //         r_en <= 1'b0;
-    //     end
-    // end
-
     always @(posedge w_clk) begin
+        
         if(rst_i) begin
-            r_en <= 1'b0;
+            r_en <= 0;
             r_tx_data <= 0;
-        // SPIモジュールがビジーでなければ、すぐに次の送信を開始する
-        end else if (!w_spi_busy) begin
-            r_tx_data <= 32'h000000AB; // 送信する固定値
-            r_en <= 1'b1;              // 送信イネーブルをON
+        end else if(w_trigger && !w_spi_busy) begin
+            //r_tx_data <= dbus_wdata_i;
+            r_tx_data <= 32'h000000AB;
+            r_en <= 1'b1;
         end else begin
-            // SPIがビジーの間はイネーブルをOFFにして待つ
             r_en <= 1'b0;
         end
     end
+
+    // always @(posedge w_clk) begin
+    //     if(rst_i) begin
+    //         r_en <= 1'b0;
+    //         r_tx_data <= 0;
+    //     // SPIモジュールがビジーでなければ、すぐに次の送信を開始する
+    //     end else if (!w_spi_busy) begin
+    //         r_tx_data <= 32'h000000AB; // 送信する固定値
+    //         r_en <= 1'b1;              // 送信イネーブルをON
+    //     end else begin
+    //         // SPIがビジーの間はイネーブルをOFFにして待つ
+    //         r_en <= 1'b0;
+    //     end
+    // end
 
     m_spi spi_to_esp32 (
         .w_clk   (w_clk),
@@ -403,8 +403,11 @@ module m_spi (
     reg [7:0] r_data = 0;
     reg r_SDA = 0;
 
-    // CSはbusy信号の反転と考えるのがシンプル
+    // CSがhighで通信開始
     assign CS = !(r_state != 0);
+
+    reg [27:0] delay_cntr;
+    localparam DELAY_COUNT = 120_000_000; // 120MHzで1秒
 
     // always @(posedge w_clk) begin
     //     if(rst_i) begin
@@ -446,6 +449,7 @@ module m_spi (
             r_SCL   <= 1;
             r_data  <= 0;
             r_SDA   <= 0;
+            delay_cntr <= 0;
         end else begin
             // case文でステートマシンを記述
             case (r_state)
@@ -480,12 +484,23 @@ module m_spi (
                 // SCLをHighにする -> 次のビットへ or 終了
                 4: begin
                     r_SCL   <= 1;
-                    r_state <= (r_cnt == 8) ? 5 : 1;
+                    // ★変更点3：8bit送信後、遅延ステート(5)に入る際にカウンターをリセット
+                    if (r_cnt == 8) begin
+                        r_state <= 5;
+                        delay_cntr <= 0;
+                    end else begin
+                        r_state <= 1;
+                    end
                 end
 
-                // 終了処理
+                // ★変更点4：終了処理と1秒間の遅延
                 5: begin
-                    r_state <= 0;
+                    // カウンターが目標値に達するまでこのステートに留まる
+                    if (delay_cntr >= DELAY_COUNT - 1) begin
+                        r_state <= 0; // カウント終了後、アイドル状態へ
+                    end else begin
+                        delay_cntr <= delay_cntr + 1;
+                    end
                 end
 
                 // ★★★ 安全装置：上記以外の不正な状態に陥ったらアイドルに戻る ★★★
